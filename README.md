@@ -48,39 +48,6 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 pnpm run dev
 ```
 
-## 🗄️ Database Schema (Supabase)
-
-Run this SQL in your Supabase SQL Editor to set up the table and secure counting function:
-
-```sql
--- Create Waitlist Table
-create table waitlist (
-  id uuid default gen_random_uuid() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  email text unique,
-  phone text unique,
-  user_type text not null check (user_type in ('driver', 'mechanic')),
-  referral_code text unique not null,
-  referred_by text,
-  constraint email_or_phone_required check (email is not null or phone is not null)
-);
-
--- Enable RLS
-alter table waitlist enable row level security;
-
--- Allow public inserts (Signups)
-create policy "Enable insert for all users" on waitlist for insert with check (true);
-
--- Secure Count Function (prevents data leakage)
-create or replace function get_waitlist_count()
-returns integer
-language sql
-security definer
-as $$
-  select count(*)::integer from waitlist;
-$$;
-```
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
