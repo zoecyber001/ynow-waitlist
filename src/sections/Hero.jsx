@@ -11,7 +11,7 @@ const Hero = () => {
     const [referralCode, setReferralCode] = useState(null);
     const [error, setError] = useState(null);
     const [referredBy, setReferredBy] = useState(null);
-    const [waitlistCount, setWaitlistCount] = useState(2341); // Default fallback
+    const [waitlistCount, setWaitlistCount] = useState(37); // Default fallback
 
     useEffect(() => {
         // Capture ?ref=CODE from URL
@@ -26,7 +26,7 @@ const Hero = () => {
         const fetchCount = async () => {
             const { data, error } = await supabase.rpc('get_waitlist_count');
             if (!error && data) {
-                setWaitlistCount(data + 2341); // Add base number to look impressive initially
+                setWaitlistCount(data + 37); // Add base number to look impressive initially
             }
         };
         fetchCount();
@@ -231,6 +231,10 @@ const Hero = () => {
                         }}>
                             Instant bookings. Verified experts. Roadside rescue in minutes.
                             <br />The future of car care is here.
+                            <br />
+                            <span style={{ color: 'var(--color-primary)', fontSize: '0.9em', marginTop: '1rem', display: 'inline-block' }}>
+                                Launching first in Ojo & Amuwo Odofin
+                            </span>
                         </p>
 
                         {/* Toggle */}
@@ -324,10 +328,21 @@ const Hero = () => {
                                     boxShadow: '0 0 10px #00FF94'
                                 }} />
                                 <span>
-                                    <strong style={{ color: '#fff' }}>{waitlistCount.toLocaleString()}</strong> people waiting.
-                                    <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem' }}>
-                                        {userType === 'driver' ? 'Get early access.' : 'Start earning.'}
-                                    </span>
+                                    {userType === 'driver' ? (
+                                        <>
+                                            <strong style={{ color: '#fff' }}>{waitlistCount.toLocaleString()}</strong> people waiting.
+                                            <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem' }}>
+                                                Get early access.
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <strong style={{ color: '#fff' }}>24</strong> mechanics already signed up.
+                                            <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem' }}>
+                                                Start earning.
+                                            </span>
+                                        </>
+                                    )}
                                 </span>
                             </div>
                         </form>

@@ -11,6 +11,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.84.0
         version: 2.84.0
+      '@vercel/speed-insights':
+        specifier: ^1.2.0
+        version: 1.2.0(react@19.2.0)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -528,6 +531,29 @@ packages:
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
+
+  '@vercel/speed-insights@1.2.0':
+    resolution: {integrity: sha512-y9GVzrUJ2xmgtQlzFP2KhVRoCglwfRQgjyfY607aU0hh0Un6d0OUyrJkjuAlsV18qR4zfoFPs/BiIj9YDS6Wzw==}
+    peerDependencies:
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   '@vitejs/plugin-react@5.1.1':
     resolution: {integrity: sha512-WQfkSw0QbQ5aJ2CHYw23ZGkqnRwqKHD/KYsMeTkZzPT4Jcf0DcBxBtwMJxnu6E7oxw5+JC6ZAiePgh28uJ1HBA==}
@@ -1436,6 +1462,10 @@ snapshots:
   '@types/ws@8.18.1':
     dependencies:
       '@types/node': 24.10.1
+
+  '@vercel/speed-insights@1.2.0(react@19.2.0)':
+    optionalDependencies:
+      react: 19.2.0
 
   '@vitejs/plugin-react@5.1.1(vite@7.2.4(@types/node@24.10.1))':
     dependencies:

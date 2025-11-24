@@ -67,3 +67,37 @@ button {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+/* Input Styles */
+.input-field {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-family: var(--font-main);
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.input-field:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-glow);
+}
+
+.input-field::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.7;
+}
+
+/* Autofill Fix */
+.input-field:-webkit-autofill,
+.input-field:-webkit-autofill:hover,
+.input-field:-webkit-autofill:focus,
+.input-field:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--color-surface) inset !important;
+    -webkit-text-fill-color: var(--color-text) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
