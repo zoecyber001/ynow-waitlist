@@ -14,6 +14,7 @@ export default async function handler(req, res) {
             hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL,
             hasSupabaseKey: !!process.env.VITE_SUPABASE_ANON_KEY,
             hasBrevoKey: !!process.env.BREVO_API_KEY,
+            envKeys: Object.keys(process.env).filter(key => !key.startsWith('npm_') && !key.startsWith('__')),
             nodeVersion: process.version,
             platform: process.platform
         };
