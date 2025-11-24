@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 .env
+SECURITY_FIX.md
+.SECURITY_FIX.md
