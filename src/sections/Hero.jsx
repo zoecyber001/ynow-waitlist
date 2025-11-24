@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import OTPInput from '../components/OTPInput';
 import { supabase } from '../lib/supabase';
+import { otpService } from '../services/otpService';
 
 const Hero = () => {
     const [inputValue, setInputValue] = useState('');
@@ -12,6 +14,12 @@ const Hero = () => {
     const [error, setError] = useState(null);
     const [referredBy, setReferredBy] = useState(null);
     const [waitlistCount, setWaitlistCount] = useState(37); // Default fallback
+
+    // OTP verification states
+    const [isPendingVerification, setIsPendingVerification] = useState(false);
+    const [contactToVerify, setContactToVerify] = useState('');
+    const [contactType, setContactType] = useState('');
+    const [otpError, setOtpError] = useState(null);
 
     useEffect(() => {
         // Capture ?ref=CODE from URL
@@ -74,33 +82,86 @@ const Hero = () => {
         setError(null);
 
         try {
+            // Send OTP for verification
+            const result = await otpService.sendOTP(inputValue, validation.field);
+
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+
+            // Move to OTP verification step
+            setContactToVerify(inputValue);
+            setContactType(validation.field);
+            setIsPendingVerification(true);
+        } catch (err) {
+            console.error('Error sending OTP:', err);
+            setError(err.message || 'Failed to send verification code. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleOTPVerify = async (otpCode) => {
+        setIsLoading(true);
+        setOtpError(null);
+
+        try {
+            // Verify OTP
+            const result = await otpService.verifyOTP(contactToVerify, otpCode);
+
+            if (!result.success) {
+                setOtpError(result.message);
+                setIsLoading(false);
+                return;
+            }
+
+            // OTP verified, now add to waitlist
             const newReferralCode = generateReferralCode();
 
-            // Prepare payload based on input type
             const payload = {
                 user_type: userType,
                 referral_code: newReferralCode,
-                referred_by: referredBy
+                referred_by: referredBy,
+                verified: true,
+                verified_at: new Date().toISOString()
             };
-            payload[validation.field] = inputValue; // Set 'email' or 'phone' dynamically
+            payload[contactType] = contactToVerify;
 
-            // Insert into Supabase
             const { error: dbError } = await supabase
                 .from('waitlist')
                 .insert([payload]);
 
             if (dbError) {
-                if (dbError.code === '23505') { // Unique violation
-                    throw new Error(`This ${validation.field} is already on the waitlist!`);
+                if (dbError.code === '23505') {
+                    throw new Error(`This ${contactType} is already on the waitlist!`);
                 }
                 throw dbError;
             }
 
             setReferralCode(newReferralCode);
             setIsSubmitted(true);
+            setIsPendingVerification(false);
         } catch (err) {
-            console.error('Error joining waitlist:', err);
-            setError(err.message || 'Something went wrong. Please try again.');
+            console.error('Error completing signup:', err);
+            setOtpError(err.message || 'Something went wrong. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResendOTP = async () => {
+        setIsLoading(true);
+        setOtpError(null);
+
+        try {
+            const result = await otpService.sendOTP(contactToVerify, contactType);
+
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+        } catch (err) {
+            console.error('Error resending OTP:', err);
+            setOtpError(err.message || 'Failed to resend code. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -162,7 +223,7 @@ const Hero = () => {
                             fontSize: '1.2rem',
                             marginBottom: '2rem'
                         }}>
-                            We'll notify <strong style={{ color: '#fff' }}>{inputValue}</strong> when we launch.
+                            We'll notify <strong style={{ color: '#fff' }}>{contactToVerify}</strong> when we launch.
                         </p>
 
                         <div style={{
@@ -203,6 +264,67 @@ const Hero = () => {
                             </div>
                         </div>
                     </div>
+                ) : isPendingVerification ? (
+                    <div style={{ animation: 'fadeIn 0.5s ease' }}>
+                        <div style={{
+                            fontSize: '3rem',
+                            marginBottom: '1rem'
+                        }}>
+                            📱
+                        </div>
+                        <h2 style={{
+                            fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+                            fontWeight: 700,
+                            marginBottom: '0.5rem'
+                        }}>
+                            Verify Your {contactType === 'email' ? 'Email' : 'Number'}
+                        </h2>
+                        <p style={{
+                            color: 'var(--color-text-muted)',
+                            fontSize: '1rem',
+                            marginBottom: '2rem',
+                            maxWidth: '500px',
+                            marginLeft: 'auto',
+                            marginRight: 'auto'
+                        }}>
+                            We sent a 6-digit code to <strong style={{ color: '#fff' }}>{contactToVerify}</strong>
+                        </p>
+
+                        <div style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            padding: '2rem',
+                            borderRadius: '12px',
+                            border: '1px solid var(--color-border)',
+                            maxWidth: '500px',
+                            margin: '0 auto 1.5rem'
+                        }}>
+                            <OTPInput
+                                length={6}
+                                onComplete={handleOTPVerify}
+                                onResend={handleResendOTP}
+                                isLoading={isLoading}
+                                error={otpError}
+                            />
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                setIsPendingVerification(false);
+                                setContactToVerify('');
+                                setContactType('');
+                                setOtpError(null);
+                            }}
+                            style={{
+                                background: 'transparent',
+                                color: 'var(--color-text-muted)',
+                                fontSize: '0.9rem',
+                                textDecoration: 'underline',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            ← Change {contactType === 'email' ? 'email' : 'number'}
+                        </button>
+                    </div>
                 ) : (
                     <>
                         <h1 style={{
@@ -233,7 +355,7 @@ const Hero = () => {
                             <br />The future of car care is here.
                             <br />
                             <span style={{ color: 'var(--color-primary)', fontSize: '0.9em', marginTop: '1rem', display: 'inline-block' }}>
-                                Launching first in Ojo & Amuwo Odofin
+                                <b>Launching first in Ojo & Amuwo Odofin</b>
                             </span>
                         </p>
 
