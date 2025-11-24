@@ -1,5 +1,5 @@
-const { createClient } = require('@supabase/supabase-js');
-const fetch = require('node-fetch');
+import { createClient } from '@supabase/supabase-js';
+import fetch from 'node-fetch';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -7,7 +7,7 @@ const supabase = createClient(
     process.env.VITE_SUPABASE_ANON_KEY
 );
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -65,7 +65,7 @@ module.exports = async function handler(req, res) {
             error: error.message || 'Failed to send OTP'
         });
     }
-};
+}
 
 // Send SMS via Sendchamp
 async function sendSMS(phoneNumber, otpCode) {

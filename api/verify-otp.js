@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -6,7 +6,7 @@ const supabase = createClient(
     process.env.VITE_SUPABASE_ANON_KEY
 );
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -57,4 +57,4 @@ module.exports = async function handler(req, res) {
             message: error.message || 'Failed to verify OTP'
         });
     }
-};
+}
