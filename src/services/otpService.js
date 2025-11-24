@@ -1,5 +1,10 @@
 import { supabase } from '../lib/supabase';
 
+// Use production API URL when in development mode
+const API_BASE_URL = import.meta.env.DEV
+    ? 'https://ynow.vercel.app'
+    : '';
+
 /**
  * OTP Service for handling verification logic
  * Now uses serverless API routes to keep API keys secure
@@ -11,7 +16,7 @@ export const otpService = {
     async sendOTP(contact, contactType) {
         try {
             // Call serverless API route instead of direct API call
-            const response = await fetch('/api/send-otp', {
+            const response = await fetch(`${API_BASE_URL}/api/send-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -47,7 +52,7 @@ export const otpService = {
     async verifyOTP(contact, otpCode) {
         try {
             // Call serverless API route instead of direct database call
-            const response = await fetch('/api/verify-otp', {
+            const response = await fetch(`${API_BASE_URL}/api/verify-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
