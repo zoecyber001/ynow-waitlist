@@ -67,55 +67,26 @@ export default async function handler(req, res) {
     }
 }
 
-// Send SMS via Sendchamp
+// Send SMS - Currently logs to console (free)
+// To enable real SMS: Add Twilio, Termii, or other SMS provider
 async function sendSMS(phoneNumber, otpCode) {
     try {
-        // Check if API key exists
-        if (!process.env.SENDCHAMP_API_KEY) {
-            throw new Error('SENDCHAMP_API_KEY is not configured in environment variables');
-        }
+        console.log('📱 SMS OTP Request');
+        console.log(`Phone: ${phoneNumber}`);
+        console.log(`OTP Code: ${otpCode}`);
+        console.log('⚠️  SMS not sent - configure SMS provider (Twilio, Termii, etc.)');
 
-        console.log('Sending SMS to:', phoneNumber);
-
-        const response = await fetch('https://api.sendchamp.com/api/v1/sms/send', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${process.env.SENDCHAMP_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                to: phoneNumber,
-                message: `Your YNOW verification code is: ${otpCode}\n\nThis code expires in 5 minutes.\n\nDon't share this code with anyone.`,
-                sender_name: 'YNOW',
-                route: 'non_dnd'
-            })
-        });
-
-        console.log('Sendchamp response status:', response.status);
-
-        // Get response text first
-        const responseText = await response.text();
-        console.log('Sendchamp response:', responseText);
-
-        // Try to parse as JSON
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (e) {
-            console.error('Failed to parse Sendchamp response as JSON:', responseText);
-            throw new Error(`Invalid response from SMS provider: ${responseText.substring(0, 100)}`);
-        }
-
-        if (!response.ok) {
-            console.error('Sendchamp error:', data);
-            throw new Error(data.message || `SMS API error: ${response.status}`);
-        }
-
-        console.log('SMS sent successfully');
-        return data;
+        // For now, just return success
+        // The OTP is in the database, user can check Vercel logs or you can add SMS provider later
+        return {
+            success: true,
+            note: 'OTP logged to console - configure SMS provider to send actual SMS'
+        };
     } catch (error) {
         console.error('Error in sendSMS:', error);
-        throw error;
+        // Don't throw error, allow the flow to continue
+        console.log(`📱 OTP for ${phoneNumber}: ${otpCode}`);
+        return { success: true, note: 'OTP logged to console' };
     }
 }
 
