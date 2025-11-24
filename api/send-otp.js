@@ -90,33 +90,85 @@ async function sendSMS(phoneNumber, otpCode) {
     }
 }
 
-// Send Email via Supabase's built-in OTP system
+// Send Email via Brevo HTTP API (Reliable & Free)
 async function sendEmail(email, otpCode) {
     try {
         console.log('Sending email to:', email);
 
-        // Use Supabase's built-in OTP email system
-        // This will use the email templates you configured in Supabase Dashboard
-        const { data, error } = await supabase.auth.signInWithOtp({
-            email: email,
-            options: {
-                shouldCreateUser: false, // Don't create user, just send OTP
-                data: {
-                    otp_code: otpCode, // Pass our custom OTP code
-                }
-            }
-        });
+        // Get API Key (try BREVO_API_KEY first, then fallback to SMTP_PASS)
+        const apiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASS;
 
-        if (error) {
-            console.error('Supabase email error:', error);
-            // Log OTP as fallback
-            console.log(`📧 OTP for ${email}: ${otpCode}`);
-            console.log('⚠️  Email not sent via Supabase - OTP logged to console');
-            // Don't throw error, allow the flow to continue
-            return { success: true, note: 'OTP logged to console - check Supabase email settings' };
+        if (!apiKey) {
+            throw new Error('BREVO_API_KEY is not configured');
         }
 
-        console.log('Email sent successfully via Supabase');
+        const senderEmail = process.env.SMTP_FROM || 'noreply@ynow.vercel.app';
+        const senderName = 'YNOW';
+
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': apiKey,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: {
+                    name: senderName,
+                    email: senderEmail
+                },
+                to: [
+                    {
+                        email: email
+                    }
+                ],
+                subject: 'Your YNOW Verification Code',
+                htmlContent: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    </head>
+                    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #0a0a0a;">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+                            <tr>
+                                <td align="center">
+                                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; border-radius: 12px; border: 1px solid #333;">
+                                        <tr>
+                                            <td style="padding: 40px; text-align: center;">
+                                                <h1 style="color: #00FF94; margin: 0 0 20px 0; font-size: 28px; font-weight: 800;">YNOW</h1>
+                                                <p style="color: #888; margin: 0 0 30px 0; font-size: 16px;">Your verification code is:</p>
+                                                <div style="background-color: #0a0a0a; border: 2px solid #00FF94; border-radius: 8px; padding: 20px; margin: 0 0 30px 0;">
+                                                    <span style="color: #00FF94; font-size: 36px; font-weight: bold; letter-spacing: 8px;">${otpCode}</span>
+                                                </div>
+                                                <p style="color: #666; margin: 0 0 10px 0; font-size: 14px;">This code expires in 5 minutes.</p>
+                                                <p style="color: #666; margin: 0; font-size: 14px;">Don't share this code with anyone.</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 20px 40px; border-top: 1px solid #333; text-align: center;">
+                                                <p style="color: #555; margin: 0; font-size: 12px;">If you didn't request this code, you can safely ignore this email.</p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                    </html>
+                `
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Brevo API error:', data);
+            throw new Error(data.message || 'Failed to send email via Brevo');
+        }
+
+        console.log('Email sent successfully via Brevo:', data.messageId);
         return { success: true, data };
     } catch (error) {
         console.error('Error in sendEmail:', error);
@@ -124,6 +176,6 @@ async function sendEmail(email, otpCode) {
         console.log(`📧 OTP for ${email}: ${otpCode}`);
         console.log('⚠️  Email sending failed - OTP logged to console');
         // Don't throw error, allow the flow to continue
-        return { success: true, note: 'OTP logged to console' };
+        return { success: true, note: 'OTP logged to console - check Brevo API Key' };
     }
 }
