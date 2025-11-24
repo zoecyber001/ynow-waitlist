@@ -13,6 +13,7 @@ export default async function handler(req, res) {
         const config = {
             hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL,
             hasSupabaseKey: !!process.env.VITE_SUPABASE_ANON_KEY,
+            hasBrevoKey: !!process.env.BREVO_API_KEY,
             nodeVersion: process.version,
             platform: process.platform
         };
