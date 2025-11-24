@@ -14,7 +14,6 @@ export default async function handler(req, res) {
             hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL,
             hasSupabaseKey: !!process.env.VITE_SUPABASE_ANON_KEY,
             hasSendchampKey: !!process.env.SENDCHAMP_API_KEY,
-            hasResendKey: !!process.env.RESEND_API_KEY,
             nodeVersion: process.version,
             platform: process.platform
         };
