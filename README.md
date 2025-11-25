@@ -4,7 +4,7 @@
 
 The official waitlist portal for **YNOW**, featuring a high-conversion "Dark Industrial" design, smart data collection, and real-time social proof.
 
-![YNOW Preview](https://via.placeholder.com/1200x600/000000/00FF94?text=YNOW+Waitlist+Preview)
+![YNOW Preview](https://imgur.com/Jj8zo6W)
 
 ## Features
 
