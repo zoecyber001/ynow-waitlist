@@ -20,6 +20,7 @@ const Hero = () => {
     const [contactToVerify, setContactToVerify] = useState('');
     const [contactType, setContactType] = useState('');
     const [otpError, setOtpError] = useState(null);
+    const [devOtp, setDevOtp] = useState(null); // For "Free" OTP testing
 
     useEffect(() => {
         // Capture ?ref=CODE from URL
@@ -82,6 +83,8 @@ const Hero = () => {
         setError(null);
 
         try {
+            // OTP SYSTEM DISABLED (Direct Signup)
+            /*
             // Send OTP for verification
             const result = await otpService.sendOTP(inputValue, validation.field);
 
@@ -89,13 +92,47 @@ const Hero = () => {
                 throw new Error(result.error);
             }
 
+            // Check for Dev OTP
+            if (result.dev_otp) {
+                setDevOtp(result.dev_otp);
+            }
+
             // Move to OTP verification step
             setContactToVerify(inputValue);
             setContactType(validation.field);
             setIsPendingVerification(true);
+            */
+
+            // DIRECT SIGNUP LOGIC
+            const newReferralCode = generateReferralCode();
+
+            const payload = {
+                user_type: userType,
+                referral_code: newReferralCode,
+                referred_by: referredBy,
+                verified: false, // Not verified via OTP
+                verified_at: null
+            };
+            payload[validation.field] = inputValue;
+
+            const { error: dbError } = await supabase
+                .from('waitlist')
+                .insert([payload]);
+
+            if (dbError) {
+                if (dbError.code === '23505') {
+                    throw new Error(`This ${validation.field} is already on the waitlist!`);
+                }
+                throw dbError;
+            }
+
+            setReferralCode(newReferralCode);
+            setContactToVerify(inputValue); // For the success message
+            setIsSubmitted(true);
+
         } catch (err) {
-            console.error('Error sending OTP:', err);
-            setError(err.message || 'Failed to send verification code. Please try again.');
+            console.error('Error completing signup:', err);
+            setError(err.message || 'Failed to join waitlist. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -306,6 +343,32 @@ const Hero = () => {
                                 error={otpError}
                             />
                         </div>
+
+                        {/* Dev OTP Viewer - The "Free" Way */}
+                        {devOtp && (
+                            <div style={{
+                                background: 'rgba(204, 255, 0, 0.1)',
+                                border: '1px dashed var(--color-primary)',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                marginBottom: '1.5rem',
+                                maxWidth: '500px',
+                                margin: '0 auto 1.5rem'
+                            }}>
+                                <p style={{ color: 'var(--color-primary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                                    🛠️ <strong>Dev Mode OTP</strong> (No SMS/Email needed):
+                                </p>
+                                <div style={{ 
+                                    fontSize: '1.5rem', 
+                                    fontWeight: 'bold', 
+                                    color: '#fff', 
+                                    letterSpacing: '4px',
+                                    fontFamily: 'monospace'
+                                }}>
+                                    {devOtp}
+                                </div>
+                            </div>
+                        )}
 
                         <button
                             onClick={() => {

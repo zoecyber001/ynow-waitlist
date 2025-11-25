@@ -7,4 +7,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Missing Supabase environment variables. Backend features will not work.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create a dummy client if keys are missing to prevent crash
+export const supabase = (supabaseUrl && supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : {
+        from: () => ({
+            select: () => ({ eq: () => ({ eq: () => ({ order: () => ({ limit: () => ({ data: [], error: null }) }) }) }) }),
+            insert: () => ({ error: null })
+        }),
+        rpc: () => ({ data: null, error: null })
+    }

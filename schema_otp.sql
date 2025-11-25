@@ -62,6 +62,9 @@ declare
   v_otp text;
   v_expires_at timestamp with time zone;
 begin
+  -- Cleanup expired OTPs first
+  perform cleanup_expired_otps();
+
   -- Generate OTP
   v_otp := generate_otp();
   

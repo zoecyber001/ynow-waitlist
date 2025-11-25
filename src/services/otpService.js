@@ -1,8 +1,8 @@
 import { supabase } from '../lib/supabase';
 
-// Use production API URL when in development mode
+// Use local server URL when in development mode
 const API_BASE_URL = import.meta.env.DEV
-    ? 'https://ynow.vercel.app'
+    ? 'http://localhost:3000'
     : '';
 
 /**
